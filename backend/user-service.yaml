@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: user-service
+  name: user-service
+  namespace: banka-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+      - image: harbor.k8s.elab.rs/banka-2/user:latest
+        imagePullPolicy: Always
+        name: user
+        envFrom:
+        - secretRef:
+            name: user-service-env
+        env:
+          - name: BANK_USER_DATABASE_HOST
+            valueFrom:
+              secretKeyRef:
+                name: banka-2-pguser-admin
+                key: host
+          - name: BANK_USER_DATABASE_PORT
+            valueFrom:
+              secretKeyRef:
+                name: banka-2-pguser-admin
+                key: port
+          - name: BANK_USER_DATABASE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: banka-2-pguser-admin
+                key: user
+          - name: BANK_USER_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: banka-2-pguser-admin
+                key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: user-service
+  name: user-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: user-service
+  type: ClusterIP
