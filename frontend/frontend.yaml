@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: banka-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - image: harbor.k8s.elab.rs/banka-2/frontend:latest
+        imagePullPolicy: Always
+        name: frontend
+        env:
+          - name: VITE_API_URL
+            value: https://banka-2.si.raf.edu.rs/api/user-service
+          - name: VITE_API_BASE_PATH
+            value: /api/v1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: frontend
+  type: ClusterIP
